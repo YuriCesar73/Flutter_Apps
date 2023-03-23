@@ -7,7 +7,6 @@ void main() => runApp(MaterialApp(
 ));
 
 class QuoteList extends StatefulWidget {
-
   @override
   State<QuoteList> createState() => _QuoteListState();
 }
@@ -20,8 +19,6 @@ class _QuoteListState extends State<QuoteList> {
     Quote(author: 'Carl Sagan', text: 'O universo não parece ser nem benevolente nem hostil, apenas indiferente.')
   ];
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +29,14 @@ class _QuoteListState extends State<QuoteList> {
         backgroundColor: Colors.redAccent,
       ),
       body: Column(
-        children: quotes.map((quote) => QuoteCard(quote: quote)).toList(),
+        children: quotes.map((quote) => QuoteCard(
+          quote: quote,
+          delete: () {
+            setState(() {
+              quotes.remove(quote);
+            });
+          }
+        )).toList(),
       ),
     );
   }
