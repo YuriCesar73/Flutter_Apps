@@ -8,10 +8,10 @@ import 'package:provider/provider.dart';
 
 import '../models/user.dart';
 
-class UserTile extends StatelessWidget {
+class ProfessorTile extends StatelessWidget {
   
   final User? user;
-  const UserTile(
+  const ProfessorTile(
     this.user, {
       Key? key,
     }): super(key: key);
@@ -33,7 +33,7 @@ class UserTile extends StatelessWidget {
             IconButton(
               onPressed: () {
                 Navigator.of(context).pushNamed(
-                  AppRoutes.USER_FORM,
+                  AppRoutes.PROFESSOR_FORM,
                   arguments: user,
                 );
               },
@@ -63,7 +63,7 @@ class UserTile extends StatelessWidget {
                   ),
                 ).then((confirmed) {
                   if (confirmed) {
-                    Provider.of<Users>(context, listen: false).remove(user!);
+                    Provider.of<Docentes>(context, listen: false).remove(user!);
                   }
                 });
               },

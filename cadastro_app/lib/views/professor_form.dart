@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import '../models/user.dart';
 import '../provider/users.dart';
 
-class UserForm extends StatelessWidget {
+class ProfessorForm extends StatelessWidget {
 
   final _form = GlobalKey <FormState>(); 
   final Map<String, String> _formData = {};
@@ -23,12 +23,12 @@ class UserForm extends StatelessWidget {
     }
   }
   
-  UserForm({Key? key}) :super(key: key);
+  ProfessorForm({Key? key}) :super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final User user = ModalRoute.of(context)?.settings.arguments as User;
-   
+    
   
   _loadFormData(user);
 
@@ -43,14 +43,15 @@ class UserForm extends StatelessWidget {
 
              if(isValid) {
               _form.currentState!.save();
-              Provider.of<Users>(context, listen: false).put(
+
+              Provider.of<Docentes>(context, listen: false).put(
                 User(
-                id: _formData['id'],
+                  id: _formData['id'],
                 name: _formData['name']!,
                 email: _formData['email']!,
                 avatarUrl: _formData['avatarUrl']!,
-              ),
-              );
+                ),
+                );
               Navigator.of(context).pop();
              }
               
