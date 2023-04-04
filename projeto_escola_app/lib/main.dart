@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_escola_android/professor_screen.dart';
 
+import 'dados_disciplina_screen.dart';
 import 'disciplina_screen.dart';
 import 'firstHome.dart';
 import 'home_screen.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
         '/home_screen': (context) => HomeScreen(),
         '/professor_screen': (context) => ProfessorScreen(),
         '/disciplina_screen': (context) => DisciplinaScreen(),
+        '/dados_disciplina_screen': (context) => DadosDisciplina(),
       },
       //home: HomeScreen(),
     );

@@ -33,7 +33,9 @@ class SQLHelper{
             id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             nome TEXT NOT NULL,
             cod CHAR[3] NOT NULL,
-            createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            matricula_professor TEXT,
+            createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (matricula_professor) REFERENCES professor (id)
             )""");
 
         await database.execute("""CREATE TABLE IF NOT EXISTS data(
@@ -43,6 +45,14 @@ class SQLHelper{
             nascimento TEXT NOT NULL,
             cpf TEXT NOT NULL,
             createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )""");
+
+        await database.execute("""CREATE TABLE IF NOT EXISTS matriculadosDisciplinas(
+            matricula_aluno INTEGER,
+            matricula_disciplina INTEGER,
+            FOREIGN KEY (matricula_aluno) REFERENCES data(id),
+            FOREIGN KEY (matricula_disciplina) REFERENCES disciplina(id),
+            PRIMARY KEY (matricula_aluno, matricula_disciplina)
             )""");
       }
     );

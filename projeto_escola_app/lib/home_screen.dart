@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).
     showSnackBar(const SnackBar(
       backgroundColor: Colors.redAccent,
-      content: Text('Data Deleted'),
+      content: Text('Dados apagados!'),
     ));
     _refreshData();
   }
@@ -57,6 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _sexoController = TextEditingController();
   final TextEditingController _nascimentoController = TextEditingController();
   final TextEditingController _cpfController = TextEditingController();
+
+
+  final formKey = GlobalKey<FormState>();
 
   void showBottomSheet(int? id) async {
     if(id!=null){
@@ -77,69 +80,100 @@ class _HomeScreenState extends State<HomeScreen> {
             top: 30.0,
             right: 15,
             bottom: MediaQuery.of(context).viewInsets.bottom + 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            TextField(
-              controller: _nomeController,
-                decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "Nome",
-              ),
-            ),
-            SizedBox(height: 10,),
-            TextField(
-              controller: _sexoController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "Sexo",
-              ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _nascimentoController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "Data de Nascimento",
-              ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _cpfController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "CPF",
-              ),
-            ),
-            Center(
-              child: ElevatedButton(
-                onPressed: () async {
-                  if(id == null) {
-                    await _addData();
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TextFormField(
+                controller: _nomeController,
+                validator: (String? value){
+                  if(value!.isEmpty || value == null){
+                    return 'Nome obrigatório';
                   }
-                  if(id != null){
-                    await _updateData(id);
+                  if(value.length < 3){
+                    return 'Nome precisa ter no mínimo 3 letras';
                   }
-                  _nomeController.text = "";
-                  _sexoController.text = "";
-                  _cpfController.text = "";
-                  _nascimentoController.text = "";
-
-                  Navigator.of(context).pop();
                 },
-                child: Padding(
-                  padding: EdgeInsets.all(18),
-                  child: Text(id == null ? "Add Data" : "Update",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  ),
+                  decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Nome",
                 ),
               ),
-            )
-          ],
+              SizedBox(height: 10,),
+              TextFormField(
+                controller: _sexoController,
+                validator: (String? value){
+                  if(value!.isEmpty || value == null){
+                    return 'Sexo obrigatório';
+                  }
+                },
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Sexo",
+                ),
+              ),
+              SizedBox(height: 10),
+              TextFormField(
+                controller: _nascimentoController,
+                validator: (String? value){
+                  if(value!.isEmpty || value == null){
+                    return 'Data de nascimento obrigatória';
+                  }
+                },
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Data de Nascimento",
+                ),
+              ),
+              SizedBox(height: 10),
+              TextFormField(
+                controller: _cpfController,
+                validator: (String? value){
+                  if(value!.isEmpty || value == null){
+                    return 'CPF obrigatório';
+                  }
+                },
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "CPF",
+                ),
+              ),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () async {
+
+                    bool? formulario = formKey.currentState?.validate();
+                    print(formulario);
+                    if(formulario != null && formulario == true) {
+                      if (id == null) {
+                        await _addData();
+                      }
+                      if (id != null) {
+                        await _updateData(id);
+                      }
+                      _nomeController.text = "";
+                      _sexoController.text = "";
+                      _cpfController.text = "";
+                      _nascimentoController.text = "";
+
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.all(18),
+                    child: Text(id == null ? "Add Data" : "Update",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

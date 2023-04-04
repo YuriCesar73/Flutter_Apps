@@ -1,7 +1,13 @@
 import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:projeto_escola_android/disciplina_db.dart';
+import 'package:projeto_escola_android/professor_db.dart';
 import 'package:sqflite/sqflite.dart';
+
+import 'dados_disciplina_screen.dart';
+
+
+
 
 class DisciplinaScreen extends StatefulWidget {
   @override
@@ -11,6 +17,7 @@ class DisciplinaScreen extends StatefulWidget {
 class _DisciplinaScreen extends State<DisciplinaScreen> {
 
   List<Map<String, dynamic>> _allData = [];
+  List<Map<String, dynamic>> singleProfessor = [];
 
   bool _isLoading = true;
 
@@ -20,7 +27,7 @@ class _DisciplinaScreen extends State<DisciplinaScreen> {
     setState(() {
       _allData = data;
       _isLoading = false;
-      print(_allData);
+      //print(_allData);
     });
   }
 
@@ -29,17 +36,18 @@ class _DisciplinaScreen extends State<DisciplinaScreen> {
     super.initState();
     _refreshData();
     //databaseFactory.deleteDatabase("database_usuario.db");
+
   }
 
   //Add
   Future<void> _addData() async {
-    await DisciplinaDB.createData(_nomeController.text, _codController.text);
+    await DisciplinaDB.createData(_nomeController.text, _codController.text, _matriculaProfessorController.text);
     _refreshData();
   }
 
   //Update
   Future<void> _updateData(int id) async {
-    await DisciplinaDB.updateData(id, _nomeController.text, _codController.text);
+    await DisciplinaDB.updateData(id, _nomeController.text, _codController.text, _matriculaProfessorController.text);
     _refreshData();
   }
 
@@ -49,20 +57,54 @@ class _DisciplinaScreen extends State<DisciplinaScreen> {
     ScaffoldMessenger.of(context).
     showSnackBar(const SnackBar(
       backgroundColor: Colors.redAccent,
-      content: Text('Dados da disciplina deletados!'),
+      content: Text('Dados deletados!'),
     ));
     _refreshData();
   }
 
+  Future<List?> buscaProfessor(matricula) async {
+
+    List<Map<String, dynamic>> professor;
+
+      if(matricula == null) return null;
+
+    int? id = int.tryParse(matricula);
+
+    // print(id);
+    if(id == null) return null;
+
+    professor = await ProfessorDB.getSingleData(id!);
+    print(professor);
+    if(professor.isEmpty) {
+      print("cheguei aqui");
+
+    };
+    var matriculaProfessor = professor;
+
+    //getDadosProfessor(professor);
+
+    return matriculaProfessor.toList();
+  }
+
+  void getDadosProfessor(professor){
+    singleProfessor = professor;
+    print(singleProfessor.first['nome']);
+  }
+
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _codController = TextEditingController();
+  final  TextEditingController _matriculaProfessorController = TextEditingController();
+  String? matriculaProfesssor;
 
+
+  final formKey = GlobalKey<FormState>();
 
   void showBottomSheet(int? id) async {
     if(id!=null){
       final existingData = _allData.firstWhere((element) => element['id'] == id);
       _nomeController.text = existingData['nome'];
       _codController.text = existingData['cod'];
+      _matriculaProfessorController.text = existingData['matricula_professor'];
     }
 
     showModalBottomSheet(
@@ -75,53 +117,103 @@ class _DisciplinaScreen extends State<DisciplinaScreen> {
             top: 30.0,
             right: 15,
             bottom: MediaQuery.of(context).viewInsets.bottom + 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            TextField(
-              controller: _nomeController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "Nome",
-              ),
-            ),
-            SizedBox(height: 10,),
-            TextField(
-              controller: _codController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "cod (apenas 3 letras)",
-              ),
-            ),
-            SizedBox(height: 10),
-            Center(
-              child: ElevatedButton(
-                onPressed: () async {
-                  if(id == null) {
-                    await _addData();
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TextFormField(
+                controller: _nomeController,
+                validator: (String? value){
+                  if(value!.isEmpty || value == null){
+                    return 'Nome Obrigatório';
                   }
-                  if(id != null){
-                    await _updateData(id);
-                  }
-                  _nomeController.text = "";
-                  _codController.text = "";
-
-
-                  Navigator.of(context).pop();
                 },
-                child: Padding(
-                  padding: EdgeInsets.all(18),
-                  child: Text(id == null ? "Add Data" : "Update",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Nome",
+                ),
+              ),
+              const SizedBox(height: 10,),
+              TextFormField(
+                controller: _codController,
+                validator: (String? value){
+                  if(value!.isEmpty || value == null){
+                    return 'Código Obrigatório';
+                  }
+                },
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "cod (apenas 3 letras)",
+                ),
+              ),
+              const SizedBox(height: 10,),
+              TextFormField(
+                onChanged: (text){
+                  matriculaProfesssor = text;
+                },
+                controller: _matriculaProfessorController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Adicionar professor (inserir matricula)",
+                ),
+              ),
+              const SizedBox(height: 10),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    var objectProfessor;
+
+                    bool? formulario = formKey.currentState?.validate();
+                    if(formulario != null && formulario == true)
+                    {
+                      print("Estou passando aqui");
+                      print(formulario);
+                      if (formulario != null && formulario == true)
+                         objectProfessor =
+                            await buscaProfessor(matriculaProfesssor);
+                      // await buscaProfessor(objectProfessor);
+                      //print(objectProfessor.runtimeType);
+
+                      if (objectProfessor == null) {
+                        _matriculaProfessorController.text = "";
+                      } else if (objectProfessor!.isEmpty) {
+                        //print("vazio!!!!!");
+                        _matriculaProfessorController.text = "";
+                      } else {
+                        // print("Não vazia!!!!!");
+                        //print(objectProfessor);
+                        _matriculaProfessorController.text =
+                            matriculaProfesssor!;
+                      }
+
+                      if (id == null) {
+                        await _addData();
+                      }
+                      if (id != null) {
+                        await _updateData(id);
+                      }
+                      _nomeController.text = "";
+                      _codController.text = "";
+                      _matriculaProfessorController.text = "";
+
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.all(18),
+                    child: Text(id == null ? "Add Data" : "Update",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -149,7 +241,7 @@ class _DisciplinaScreen extends State<DisciplinaScreen> {
                 ),
               ),
             ),
-            subtitle: Text('Matricula: ' +_allData[index]['id'].toString() + '\nCOD: ' + _allData[index]['cod']),
+            subtitle: Text('ID: ' +_allData[index]['id'].toString() + '\nCOD: ' + _allData[index]['cod'] + '\nMatricula docente: ' + _allData[index]['matricula_professor']),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -166,7 +258,14 @@ class _DisciplinaScreen extends State<DisciplinaScreen> {
                   },
                   icon: Icon(Icons.delete),
                   color: Colors.red,
-                )
+                ),
+                IconButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/dados_disciplina_screen', arguments: _allData[index]);
+                    },
+                  icon: Icon(Icons.more),
+                  color: Colors.lime,
+                ),
               ],
             ),
           ),
