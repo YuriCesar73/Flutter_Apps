@@ -1,5 +1,6 @@
+import 'package:projeto_escola_android/matriculados_db.dart';
 import 'package:sqflite/sqflite.dart' as sql;
-import 'initDB.dart' as INITDB;
+
 
 class SQLHelper{
   static Future<void> createTables(sql.Database database) async {
@@ -50,6 +51,7 @@ class SQLHelper{
         await database.execute("""CREATE TABLE IF NOT EXISTS matriculadosDisciplinas(
             matricula_aluno INTEGER,
             matricula_disciplina INTEGER,
+            nome_aluno TEXT,
             FOREIGN KEY (matricula_aluno) REFERENCES data(id),
             FOREIGN KEY (matricula_disciplina) REFERENCES disciplina(id),
             PRIMARY KEY (matricula_aluno, matricula_disciplina)
@@ -78,6 +80,11 @@ class SQLHelper{
     return db.query('data', where: "id = ?", whereArgs: [id], limit: 1);
   }
 
+ /* static Future<String> sendAlunoMatriculado(int id) async {
+    final alunos = await SQLHelper.getSingleData(id);
+    return Future.value(alunos[0]['nome']);
+  }*/
+
   static Future<int> updateData(int id, String nome, String sexo, String nascimento, String cpf) async{
     final db = await SQLHelper.db();
     final data = {
@@ -96,6 +103,7 @@ class SQLHelper{
     final db = await SQLHelper.db();
     try {
       await db.delete('data', where: "id = ?", whereArgs: [id]);
+      await MatriculadosDB.deleteAllData(id);
     } catch(e) {}
   }
 }

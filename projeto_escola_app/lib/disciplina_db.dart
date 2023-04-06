@@ -49,6 +49,7 @@ class DisciplinaDB{
           await database.execute("""CREATE TABLE IF NOT EXISTS matriculadosDisciplinas(
             matricula_aluno INTEGER,
             matricula_disciplina INTEGER,
+            nome_aluno TEXT,
             FOREIGN KEY (matricula_aluno) REFERENCES data(id),
             FOREIGN KEY (matricula_disciplina) REFERENCES disciplina(id),
             PRIMARY KEY (matricula_aluno, matricula_disciplina)
@@ -76,6 +77,11 @@ class DisciplinaDB{
     return db.query('disciplina', where: "id = ?", whereArgs: [id], limit: 1);
   }
 
+  static Future<List<Map<String, dynamic>>> getAllProfessorData(String matricula_professor) async {
+    final db = await DisciplinaDB.db();
+    return db.query('disciplina', where: "matricula_professor = ?", whereArgs: [matricula_professor]);
+  }
+
   static Future<int> updateData(int id, String nome, String cod, String matriculaProfessor) async{
     final db = await DisciplinaDB.db();
     final data = {
@@ -89,10 +95,18 @@ class DisciplinaDB{
     return result;
   }
 
+  static Future<int> updateProfessorData(String id) async{
+    final db = await DisciplinaDB.db();
+    final result = await db.update('disciplina', {'matricula_professor': ''}, where: "matricula_professor = ?", whereArgs: [id]);
+    return result;
+  }
+
   static Future<void> deleteData (int id) async{
     final db = await DisciplinaDB.db();
     try {
       await db.delete('disciplina', where: "id = ?", whereArgs: [id]);
     } catch(e) {}
   }
+
+
 }

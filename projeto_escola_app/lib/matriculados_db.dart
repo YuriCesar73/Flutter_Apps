@@ -51,6 +51,7 @@ class MatriculadosDB{
           await database.execute("""CREATE TABLE IF NOT EXISTS matriculadosDisciplinas(
             matricula_aluno INTEGER,
             matricula_disciplina INTEGER,
+            nome_aluno TEXT,
             FOREIGN KEY (matricula_aluno) REFERENCES data(id),
             FOREIGN KEY (matricula_disciplina) REFERENCES disciplina(id),
             PRIMARY KEY (matricula_aluno, matricula_disciplina)
@@ -59,10 +60,10 @@ class MatriculadosDB{
     );
   }
 
-  static Future<int> createData(String matricula_aluno, String matricula_disciplina) async {
+  static Future<int> createData(int matricula_aluno, int matricula_disciplina, String nome_aluno) async {
     final db = await MatriculadosDB.db();
 
-    final data = {'matricula_aluno': matricula_aluno, 'matricula_disciplina': matricula_disciplina};
+    final data = {'matricula_aluno': matricula_aluno, 'matricula_disciplina': matricula_disciplina, 'nome_aluno': nome_aluno};
     final id = await db.insert('matriculadosDisciplinas', data, conflictAlgorithm: sql.ConflictAlgorithm.replace);
 
     return id;
@@ -72,6 +73,28 @@ class MatriculadosDB{
     final db = await MatriculadosDB.db();
     return db.query('matriculadosDisciplinas', orderBy: 'matricula_aluno');
   }
+
+  //FUNÇÃO PARA RETORNAR OS ALUNOS CADASTRADOS;
+  /*static Future<List> getAlunosMatriculas() async{
+    final db = await MatriculadosDB.db();
+    final alunos = await SQLHelper.getAllData();
+    final matriculados = await MatriculadosDB.getAllData();
+    var retorno = [];
+
+    for(int i = 0; i < matriculados.length; i++){
+      final alunos = await SQLHelper.sendAlunoMatriculado(matriculados[i]['matricula_aluno']);
+      retorno.add(alunos);
+    }
+
+    return retorno;
+  }*/
+
+  static Future<List<Map<String, dynamic>>> getDataByDisciplina(int id) async{
+    final db = await MatriculadosDB.db();
+    return db.query('matriculadosDisciplinas', where: "matricula_disciplina = ?", whereArgs: [id], orderBy: 'matricula_aluno');
+  }
+
+
 
   static Future<List<Map<String, dynamic>>> getSingleData(String matricula_aluno, String matricula_disciplina) async {
     final db = await MatriculadosDB.db();
@@ -91,10 +114,18 @@ class MatriculadosDB{
     return result;
   }*/
 
-  static Future<void> deleteData (String matricula_aluno, String matricula_disciplina) async{
+  static Future<void> deleteData (int matricula_aluno, int matricula_disciplina) async{
     final db = await MatriculadosDB.db();
     try {
       await db.delete('matriculadosDisciplinas', where: "matricula_aluno = ? and matricula_disciplina = ?", whereArgs: [matricula_aluno, matricula_disciplina]);
     } catch(e) {}
   }
+
+  static Future<void> deleteAllData (int matricula_aluno) async{
+    final db = await MatriculadosDB.db();
+    try {
+      await db.delete('matriculadosDisciplinas', where: "matricula_aluno = ?", whereArgs: [matricula_aluno]);
+    } catch(e) {}
+  }
+
 }

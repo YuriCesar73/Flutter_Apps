@@ -5,7 +5,12 @@ class FirstHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Projeto Escola"),
+        title: Text("Projeto Escola",
+        style: TextStyle(
+            fontSize: 25
+          ),
+        ),
+        centerTitle: true,
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -13,22 +18,23 @@ class FirstHome extends StatelessWidget {
         child: Center(
           child: Column(
             children: [
-              TextButton.icon(onPressed: () {
+              ElevatedButton.icon(
+                  onPressed: () {
                 Navigator.pushNamed(context, '/professor_screen');
               },
                   icon: Icon(Icons.school_rounded),
                   label: Text("Docentes")
               ),
-              SizedBox(height: 20,),
-              TextButton.icon(
+              SizedBox(height: 30,),
+              ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pushNamed(context, '/disciplina_screen');
                   },
                   icon: Icon(Icons.book),
                   label: Text("Disciplinas")
               ),
-              SizedBox(height: 20,),
-              TextButton.icon(
+              SizedBox(height: 30,),
+              ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pushNamed(context, '/home_screen');
                   },

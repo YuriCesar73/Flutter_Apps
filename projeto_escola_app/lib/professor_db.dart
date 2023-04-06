@@ -1,5 +1,5 @@
+import 'package:projeto_escola_android/disciplina_db.dart';
 import 'package:sqflite/sqflite.dart' as sql;
-import 'initDB.dart' as INITDB;
 
 class ProfessorDB{
   static Future<void> createTables(sql.Database database) async {
@@ -36,7 +36,9 @@ class ProfessorDB{
             id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             nome TEXT NOT NULL,
             cod CHAR[3] NOT NULL,
-            createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            matricula_professor TEXT,
+            createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (matricula_professor) REFERENCES professor (id)
             )""");
 
           await database.execute("""CREATE TABLE IF NOT EXISTS data(
@@ -46,6 +48,15 @@ class ProfessorDB{
             nascimento TEXT NOT NULL,
             cpf TEXT NOT NULL,
             createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )""");
+
+          await database.execute("""CREATE TABLE IF NOT EXISTS matriculadosDisciplinas(
+            matricula_aluno INTEGER,
+            matricula_disciplina INTEGER,
+            nome_aluno TEXT,
+            FOREIGN KEY (matricula_aluno) REFERENCES data(id),
+            FOREIGN KEY (matricula_disciplina) REFERENCES disciplina(id),
+            PRIMARY KEY (matricula_aluno, matricula_disciplina)
             )""");
 
         }
@@ -87,7 +98,9 @@ class ProfessorDB{
 
   static Future<void> deleteData (int id) async{
     final db = await ProfessorDB.db();
+    final disciplina = await DisciplinaDB.getAllProfessorData(id.toString());
     try {
+      await DisciplinaDB.updateProfessorData(id.toString());
       await db.delete('professor', where: "id = ?", whereArgs: [id]);
     } catch(e) {}
   }

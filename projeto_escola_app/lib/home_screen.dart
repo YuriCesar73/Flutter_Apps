@@ -1,5 +1,3 @@
-import 'dart:ffi';
-import 'package:sqflite/sqflite.dart';
 import 'package:flutter/material.dart';
 import 'package:projeto_escola_android/db_helper.dart';
 
@@ -19,7 +17,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _allData = data;
       _isLoading = false;
-      print(_allData);
     });
   }
 
@@ -33,12 +30,22 @@ class _HomeScreenState extends State<HomeScreen> {
   //Add
   Future<void> _addData() async {
     await SQLHelper.createData(_nomeController.text, _sexoController.text, _nascimentoController.text, _cpfController.text);
+    ScaffoldMessenger.of(context).
+    showSnackBar(const SnackBar(
+      backgroundColor: Colors.greenAccent,
+      content: Text('Discente cadastrado!'),
+    ));
     _refreshData();
   }
 
   //Update
   Future<void> _updateData(int id) async {
     await SQLHelper.updateData(id, _nomeController.text, _sexoController.text, _nascimentoController.text, _cpfController.text);
+    ScaffoldMessenger.of(context).
+    showSnackBar(const SnackBar(
+      backgroundColor: Colors.blueAccent,
+      content: Text('Dados atualizados!'),
+    ));
     _refreshData();
   }
 
@@ -108,6 +115,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   if(value!.isEmpty || value == null){
                     return 'Sexo obrigatório';
                   }
+                  if(value.length != 1){
+                    return "Digite apenas 1 caractere";
+                  }
+                  if(value.toUpperCase() != 'M' && value.toUpperCase() != 'F' && value.toUpperCase() != 'O'){
+                    return 'Insira um caractere válido (M, F, O)';
+                  }
                 },
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
@@ -120,6 +133,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 validator: (String? value){
                   if(value!.isEmpty || value == null){
                     return 'Data de nascimento obrigatória';
+                  }
+                  if(value.length != 10 && value.length != 8){
+                    return 'Formato de data inválido (DD/MM/AAAA) ou (DD/MM/AA)';
+                  }
+                  if(value.contains(RegExp(r'[A-Z]')) || value.contains(RegExp(r'[a-z]')) || !value.contains(RegExp('/'),2) || !value.contains(RegExp('/'),5)){
+                    return "Insira caracteres válidos";
                   }
                 },
                 decoration: InputDecoration(
@@ -134,6 +153,46 @@ class _HomeScreenState extends State<HomeScreen> {
                   if(value!.isEmpty || value == null){
                     return 'CPF obrigatório';
                   }
+                  String result = value.replaceAll(RegExp('[^A-Za-z0-9]'), ''); //Retira os caracteres diferentes de números
+
+                  if(result.length != 11) {
+                    return 'CPF inválido';
+                  }
+
+                  var cpfNumeros = [];
+
+                  for(int i = 0; i < result.length; i++){
+                    cpfNumeros.add(int.parse(result[i]));
+                  }
+
+                  int j=1;
+                  num soma=0;
+                  for (int i=0; i<9; i++){
+                    soma = (soma + (cpfNumeros[i]*j));
+                    j++;
+                  }
+
+                  num digitoVerificador1 = soma % 11;
+
+                  if (digitoVerificador1 == 10){
+                    digitoVerificador1=0;
+                  }
+
+                  soma = 0;
+
+                  for (int i = 0; i < 10; i++){
+                    soma = soma + (cpfNumeros[i]*i);
+                  }
+
+                  num digitoVerificador2 = soma%11;
+
+                  if (digitoVerificador2 == 10){
+                    digitoVerificador2 = 0;
+                  }
+
+                  if(!(digitoVerificador1 == cpfNumeros[9]) || !(digitoVerificador2 == cpfNumeros[10])){
+                    return "CPF inválido";
+                  }
                 },
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
@@ -145,7 +204,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () async {
 
                     bool? formulario = formKey.currentState?.validate();
-                    print(formulario);
                     if(formulario != null && formulario == true) {
                       if (id == null) {
                         await _addData();
@@ -163,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   child: Padding(
                     padding: EdgeInsets.all(18),
-                    child: Text(id == null ? "Add Data" : "Update",
+                    child: Text(id == null ? "Adicionar" : "Atualizar",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
@@ -201,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            subtitle: Text('Matricula: ' +_allData[index]['id'].toString() +'\nSexo: ' + _allData[index]['sexo'] + ', \nNascimento: ' + _allData[index]['nascimento'] + ', \nCPF: ' + _allData[index]['cpf']),
+            subtitle: Text('Matricula: ' +_allData[index]['id'].toString() +'\nSexo: ' + _allData[index]['sexo'] + ' \nNascimento: ' + _allData[index]['nascimento'] + ' \nCPF: ' + _allData[index]['cpf']),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
